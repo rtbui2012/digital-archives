@@ -1,0 +1,104 @@
+name: "Bug report (Agent-ready)"
+description: "Report a bug in a format that an automated OpenClaw agent can reproduce and fix."
+title: "[Bug]: "
+labels: ["type:bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please include clear repro steps. If the agent can't reproduce, it will ask for clarification and stop.
+
+  - type: input
+    id: area
+    attributes:
+      label: Area
+      placeholder: "backend | frontend | both | ci"
+    validations:
+      required: true
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: "What is broken?"
+      placeholder: "One sentence description."
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Reproduction steps (required)
+      description: "Numbered steps that reliably reproduce the issue."
+      placeholder: |
+        1) ...
+        2) ...
+        3) ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: env
+    attributes:
+      label: Environment
+      description: "OS, node/python versions, browser, etc."
+      placeholder: |
+        - OS:
+        - Python:
+        - Node:
+        - Browser:
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / screenshots
+      description: "Paste relevant logs (redact secrets)."
+      render: shell
+    validations:
+      required: false
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria (required)
+      value: |
+        - [ ] Bug is fixed and no longer reproducible using the steps above
+        - [ ] A regression test OR a clear manual verification script/notes is included
+    validations:
+      required: true
+
+  - type: textarea
+    id: verify
+    attributes:
+      label: How to verify (required)
+      placeholder: |
+        1) ...
+        2) ...
+        3) ...
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: ready
+    attributes:
+      label: Agent run authorization
+      description: "Checking this does not run the agent by itself. A maintainer will apply label agent:run."
+      options:
+        - label: "I confirm the repro steps are complete and this is ready for an automated agent."
+          required: true

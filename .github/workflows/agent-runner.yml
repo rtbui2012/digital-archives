@@ -1,0 +1,102 @@
+name: OpenClaw Agent Runner Dispatch
+
+on:
+  issues:
+    types: [labeled]
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  dispatch:
+    if: github.event.label.name == 'agent:run'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Build Agent Task Packet
+        id: packet
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issue = context.payload.issue;
+            const packet = {
+              version: 1,
+              repo: context.repo.owner + '/' + context.repo.repo,
+              issue: {
+                number: issue.number,
+                title: issue.title,
+                url: issue.html_url,
+                body: issue.body || ''
+              },
+              sender: {
+                workflow: process.env.GITHUB_WORKFLOW,
+                run_id: process.env.GITHUB_RUN_ID,
+                run_attempt: process.env.GITHUB_RUN_ATTEMPT,
+                actor: context.actor
+              },
+              const slugify = (s) => (s || '')
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, '-')
+                .replace(/(^-|-$)/g, '')
+                .slice(0, 50);
+              const slug = slugify(issue.title);
+
+              agent_instructions: {
+                repo_path_hint: '~/git/digital-archives',
+                base_branch: 'main',
+                branch_name: `agent/issue-${issue.number}-${slug || 'task'}`,
+                pr_title: `[Agent] ${issue.title}`
+              },
+              time: new Date().toISOString()
+            };
+            core.setOutput('json', JSON.stringify(packet));
+
+      - name: Sign packet (HMAC-SHA256)
+        id: sign
+        shell: bash
+        env:
+          OPENCLOW_HMAC_SECRET: ${{ secrets.OPENCLOW_HMAC_SECRET }}
+          PACKET: ${{ steps.packet.outputs.json }}
+        run: |
+          set -euo pipefail
+          sig=$(printf "%s" "$PACKET" | openssl dgst -sha256 -hmac "$OPENCLOW_HMAC_SECRET" | awk '{print $2}')
+          echo "sig=$sig" >> $GITHUB_OUTPUT
+
+      - name: Dispatch to runner
+        id: dispatch
+        shell: bash
+        env:
+          PACKET: ${{ steps.packet.outputs.json }}
+          SIG: ${{ steps.sign.outputs.sig }}
+        run: |
+          set -euo pipefail
+          http_code=$(curl -sS -o response.json -w "%{http_code}" \
+            -X POST "https://agent.amplyventures.com/openclaw/github/issue" \
+            -H "content-type: application/json" \
+            -H "x-openclaw-signature: sha256=$SIG" \
+            --data "$PACKET")
+          echo "http_code=$http_code" >> $GITHUB_OUTPUT
+          echo "--- response.json ---"
+          cat response.json || true
+          if [ "$http_code" -lt 200 ] || [ "$http_code" -ge 300 ]; then
+            exit 1
+          fi
+
+      - name: Comment status
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issue_number = context.payload.issue.number;
+            const ok = '${{ steps.dispatch.outcome }}' === 'success';
+            const code = '${{ steps.dispatch.outputs.http_code }}' || 'n/a';
+            const body = ok
+              ? `✅ Dispatched to OpenClaw runner (HTTP ${code}). The runner will comment progress and open a PR when done.`
+              : `❌ Failed to dispatch to OpenClaw runner (HTTP ${code}). Check Actions logs.`;
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number,
+              body,
+            });

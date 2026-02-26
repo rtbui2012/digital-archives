@@ -1,0 +1,90 @@
+name: "Feature request (Agent-ready)"
+description: "Request a feature in a format that an automated OpenClaw agent can implement."
+title: "[Feature]: "
+labels: ["type:feature"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please fill this out carefully. The more specific you are, the more likely the agent can ship this in one PR.
+
+  - type: input
+    id: area
+    attributes:
+      label: Area
+      description: "Where does this belong?"
+      placeholder: "backend | frontend | both | ci"
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem / Goal
+      description: "What are we trying to achieve, and why?"
+      placeholder: "As a <user>, I want <thing> so that <benefit>."
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution (optional)
+      description: "If you have an implementation idea, describe it."
+      placeholder: "API endpoints, UI changes, data model, etc."
+    validations:
+      required: false
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria (required)
+      description: "Write checkable outcomes. The agent will copy these into the PR and check them off."
+      value: |
+        - [ ] 
+        - [ ] 
+    validations:
+      required: true
+
+  - type: textarea
+    id: non_goals
+    attributes:
+      label: Out of scope / Non-goals
+      description: "What should NOT be changed as part of this request?"
+      placeholder: "Do not redesign UI; do not change DB schema; etc."
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      options:
+        - P0 (urgent)
+        - P1 (high)
+        - P2 (normal)
+        - P3 (low)
+    validations:
+      required: true
+
+  - type: textarea
+    id: verify
+    attributes:
+      label: How to verify (required)
+      description: "Step-by-step manual verification instructions. Assume a fresh checkout."
+      placeholder: |
+        1) Start backend: ...
+        2) Start frontend: ...
+        3) Navigate to ...
+        4) Confirm ...
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: ready
+    attributes:
+      label: Agent run authorization
+      description: "Checking this does not run the agent by itself. A maintainer will apply label agent:run."
+      options:
+        - label: "I confirm this is ready for an automated agent to implement."
+          required: true
