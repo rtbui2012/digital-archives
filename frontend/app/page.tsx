@@ -97,11 +97,13 @@ export default function Page() {
               hits.map((h) => (
                 <article key={h.id} style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 14, padding: 16 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10 }}>
-                    <div style={{ fontWeight: 600 }}>{h.payload?.source || h.payload?.file || 'Untitled'}</div>
+                    <div style={{ fontWeight: 600 }}>{h.payload?.filename || h.payload?.path || 'Untitled'}</div>
                     <div style={{ opacity: 0.8 }}>score {(h.score ?? 0).toFixed(3)}</div>
                   </div>
                   <div style={{ marginTop: 6, opacity: 0.85, fontSize: 13 }}>
-                    doc {h.payload?.document_id ?? '—'} · page {h.payload?.page ?? '—'} · chunk {h.payload?.chunk ?? '—'}
+                    {h.payload?.path ? <span style={{ opacity: 0.9 }}>{h.payload.path}</span> : null}
+                    {h.payload?.path ? ' · ' : ''}
+                    page {h.payload?.page ?? '—'} · chunk {h.payload?.chunk ?? '—'}
                   </div>
                   <pre style={{ marginTop: 10, whiteSpace: 'pre-wrap', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas', fontSize: 13, lineHeight: 1.4, background: 'rgba(0,0,0,0.35)', padding: 12, borderRadius: 12, border: '1px solid rgba(255,255,255,0.08)' }}>
                     {String(h.payload?.text || '').slice(0, 1200)}
