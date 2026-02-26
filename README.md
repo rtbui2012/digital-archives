@@ -8,11 +8,11 @@ Web UI + indexing pipeline for searching your Qdrant `documents` collection (loc
 
 ## Quickstart (dev)
 ### 1) Backend
-```bash
+```powershell
 cd backend
-python -m venv .venv
+uv venv
 .\.venv\Scripts\activate
-pip install -r requirements.txt
+uv pip install -r requirements.txt
 copy .env.example .env
 uvicorn app.main:app --reload --port 8000
 ```
