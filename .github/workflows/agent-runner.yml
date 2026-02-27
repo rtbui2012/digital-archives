@@ -76,6 +76,8 @@ jobs:
             -H "content-type: application/json" \
             -H "accept: application/json" \
             -H "user-agent: OpenClaw-GitHubActions-Dispatch" \
+            -H "CF-Access-Client-Id: ${{ secrets.CF_ACCESS_CLIENT_ID }}" \
+            -H "CF-Access-Client-Secret: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}" \
             -H "x-openclaw-signature: sha256=$SIG" \
             --data "$PACKET")
           echo "http_code=$http_code" >> $GITHUB_OUTPUT
