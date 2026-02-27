@@ -72,7 +72,7 @@ jobs:
         run: |
           set -euo pipefail
           http_code=$(curl -sS -o response.json -w "%{http_code}" \
-            -X POST "https://agent.amplyventures.com/openclaw/github/issue" \
+            -X POST "https://agent.amplygreen.com/openclaw/github/issue" \
             -H "content-type: application/json" \
             -H "x-openclaw-signature: sha256=$SIG" \
             --data "$PACKET")
