@@ -74,6 +74,8 @@ jobs:
           http_code=$(curl -sS -o response.json -w "%{http_code}" \
             -X POST "https://agent.amplygreen.com/openclaw/github/issue" \
             -H "content-type: application/json" \
+            -H "accept: application/json" \
+            -H "user-agent: OpenClaw-GitHubActions-Dispatch" \
             -H "x-openclaw-signature: sha256=$SIG" \
             --data "$PACKET")
           echo "http_code=$http_code" >> $GITHUB_OUTPUT
