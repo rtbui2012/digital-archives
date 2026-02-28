@@ -4,22 +4,33 @@ import { useMemo, useState } from 'react';
 
 type Hit = { score: number; id: string; payload: Record<string, any> };
 
-function resolveDocumentUrl(apiBase: string, payload: Record<string, any>): string | null {
+function resolveDocumentUrl(_apiBase: string, payload: Record<string, any>): string | null {
   // Prefer explicit web URL if backend ever provides one.
   const directUrl = payload?.url || payload?.href;
   if (typeof directUrl === 'string' && directUrl.trim()) return directUrl;
 
-  // Current backend payload uses `source` for uploaded filename.
+  // File path in current payloads.
   const p = payload?.path || payload?.source;
   if (typeof p !== 'string' || !p.trim()) return null;
 
-  // If it's already an absolute URL, just use it.
+  // Already an absolute URL? Use it.
   if (/^https?:\/\//i.test(p)) return p;
 
-  // Otherwise assume it's a server-served document route.
-  // (Backend should serve this path; frontend just links to it.)
-  const normalized = p.replace(/^\/+/, '');
-  return `${apiBase.replace(/\/+$/, '')}/documents/${encodeURIComponent(normalized)}`;
+  // If it looks like an absolute Windows path, open via file:///
+  // Example: C:\Users\me\Documents\file.pdf
+  if (/^[a-zA-Z]:\\/.test(p)) {
+    const forward = p.replace(/\\/g, '/');
+    return `file:///${encodeURI(forward)}`;
+  }
+
+  // If it looks like a *nix absolute path, open via file://
+  // Example: /home/me/docs/file.pdf
+  if (p.startsWith('/')) {
+    return `file://${encodeURI(p)}`;
+  }
+
+  // Relative paths: also treat as file paths (relative to current machine).
+  return `file:///${encodeURI(p.replace(/\\/g, '/'))}`;
 }
 
 export default function Page() {
