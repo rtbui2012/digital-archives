@@ -101,7 +101,7 @@ export default function Page() {
                     cursor: loading ? 'not-allowed' : 'pointer'
                   }}
                 >
-                  {loading ? 'SearchingΓÇª' : 'Search'}
+                  {loading ? 'Searching...' : 'Search'}
                 </button>
               </div>
               {error && <div style={{ color: '#ff8f8f', fontSize: 13, whiteSpace: 'pre-wrap' }}>{error}</div>}
@@ -135,8 +135,8 @@ export default function Page() {
                         </a>
                       );
                     })()}
-                    {(h.payload?.path || h.payload?.source) ? ' ┬╖ ' : ''}
-                    page {h.payload?.page ?? 'ΓÇö'} ┬╖ chunk {h.payload?.chunk ?? 'ΓÇö'}
+                    {(h.payload?.path || h.payload?.source) ? ' · ' : ''}
+                    page {h.payload?.page ?? '—'} · chunk {h.payload?.chunk ?? '—'}
                   </div>
                   <pre style={{ marginTop: 10, whiteSpace: 'pre-wrap', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas', fontSize: 13, lineHeight: 1.4, background: 'rgba(0,0,0,0.35)', padding: 12, borderRadius: 12, border: '1px solid rgba(255,255,255,0.08)' }}>
                     {String(h.payload?.text || '').slice(0, 1200)}
