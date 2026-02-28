@@ -1,0 +1,36 @@
+from __future__ import annotations
+
+from pathlib import Path
+from fastapi import APIRouter, HTTPException
+from fastapi.responses import FileResponse
+
+router = APIRouter(tags=["documents"])
+
+
+def _documents_root() -> Path:
+    """Returns the folder where documents are expected to live.
+
+    For now, this is a simple default that works in local dev.
+    Users can place files under <repo>/backend/documents.
+
+    NOTE: This is intentionally minimal to satisfy the feature request; it does
+    not change indexing/search behavior.
+    """
+    return (Path(__file__).resolve().parents[2] / "documents").resolve()
+
+
+@router.get("/documents/{doc_path:path}")
+def get_document(doc_path: str):
+    root = _documents_root()
+
+    # Prevent path traversal; resolve must stay within root.
+    candidate = (root / doc_path).resolve()
+    if root not in candidate.parents and candidate != root:
+        raise HTTPException(status_code=400, detail="Invalid document path")
+
+    if not candidate.exists() or not candidate.is_file():
+        raise HTTPException(status_code=404, detail="Document not found")
+
+    # Let the browser decide (PDF viewer for PDFs, download/preview otherwise).
+    return FileResponse(path=str(candidate), filename=candidate.name)
+

@@ -1,1 +1,6 @@
 # routes package
+
+from . import documents, index, search
+
+__all__ = ["documents", "index", "search"]
+

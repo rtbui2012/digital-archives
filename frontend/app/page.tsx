@@ -4,6 +4,29 @@ import { useMemo, useState } from 'react';
 
 type Hit = { score: number; id: string; payload: Record<string, any> };
 
+function resolveDocumentUrl(payload: Record<string, any>): string | null {
+  // Prefer explicit web URL if backend ever provides one.
+  const directUrl = payload?.url || payload?.href;
+  if (typeof directUrl === 'string' && directUrl.trim()) return directUrl;
+
+  // File path in current payloads.
+  const p = payload?.path || payload?.source;
+  if (typeof p !== 'string' || !p.trim()) return null;
+
+  // Already an absolute URL? Use it.
+  if (/^https?:\/\//i.test(p)) return p;
+
+  // Browsers often block file:// navigations from http(s) pages.
+  // Serve local documents via the Next.js app instead using rewrites.
+  //
+  // We strip leading slashes (if any) but keep the drive letter if present.
+  const rel = p.replace(/^[\\/]+/, '');
+  const normalized = rel.replace(/\\/g, '/');
+
+  // Return a relative path so it hits the Next.js rewrite rule in next.config.mjs
+  return `/documents/${normalized.split('/').map(encodeURIComponent).join('/')}`;
+}
+
 export default function Page() {
   const [query, setQuery] = useState('');
   const [limit, setLimit] = useState(10);
@@ -50,7 +73,7 @@ export default function Page() {
               <input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="e.g. property tax 2022" 
+                placeholder="e.g. property tax 2022"
                 style={{
                   padding: '12px 12px',
                   borderRadius: 10,
@@ -83,7 +106,7 @@ export default function Page() {
                     cursor: loading ? 'not-allowed' : 'pointer'
                   }}
                 >
-                  {loading ? 'Searching…' : 'Search'}
+                  {loading ? 'Searching...' : 'Search'}
                 </button>
               </div>
               {error && <div style={{ color: '#ff8f8f', fontSize: 13, whiteSpace: 'pre-wrap' }}>{error}</div>}
@@ -101,8 +124,23 @@ export default function Page() {
                     <div style={{ opacity: 0.8 }}>score {(h.score ?? 0).toFixed(3)}</div>
                   </div>
                   <div style={{ marginTop: 6, opacity: 0.85, fontSize: 13 }}>
-                    {h.payload?.path ? <span style={{ opacity: 0.9 }}>{h.payload.path}</span> : null}
-                    {h.payload?.path ? ' · ' : ''}
+                    {(() => {
+                      const href = resolveDocumentUrl(h.payload || {});
+                      const label = (h.payload?.path || h.payload?.source) as string | undefined;
+                      if (!href || !label) return null;
+                      return (
+                        <a
+                          href={href}
+                          target="_blank"
+                          rel="noreferrer"
+                          style={{ opacity: 0.95, color: '#9cc2ff', textDecoration: 'underline' }}
+                          title="Open document"
+                        >
+                          {label}
+                        </a>
+                      );
+                    })()}
+                    {(h.payload?.path || h.payload?.source) ? ' · ' : ''}
                     page {h.payload?.page ?? '—'} · chunk {h.payload?.chunk ?? '—'}
                   </div>
                   <pre style={{ marginTop: 10, whiteSpace: 'pre-wrap', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas', fontSize: 13, lineHeight: 1.4, background: 'rgba(0,0,0,0.35)', padding: 12, borderRadius: 12, border: '1px solid rgba(255,255,255,0.08)' }}>
@@ -121,3 +159,4 @@ export default function Page() {
     </div>
   );
 }
+
