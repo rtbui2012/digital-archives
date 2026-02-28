@@ -7,11 +7,16 @@ This repo is intended to be workable by automated agents.
 - `frontend/` — Next.js frontend
 
 ## Operating rules (agent)
-1) **Start with a plan**: restate the goal, list assumptions, and propose a short plan in the issue/PR.
-2) **Ask when unclear**: if acceptance criteria or reproduction steps are missing, comment on the issue and apply label `needs:clarification`.
-3) **Prefer small PRs**: keep changes focused to the issue.
-4) **Safe-by-default**: do not delete data; avoid breaking API changes unless explicitly requested.
-5) **CI/workflows allowed**: you may add/modify GitHub Actions and tooling (ruff, pytest, eslint, etc.).
+1) **You must satisfy the issue’s acceptance criteria.**
+   - Copy the acceptance criteria checklist into the PR description and check items off as you implement.
+   - If you cannot satisfy an item, stop and ask for clarification before opening a PR.
+2) **Start with a plan**: restate the goal, list assumptions, and propose a short plan.
+3) **No drive-by refactors or tooling churn** unless explicitly required by the issue.
+   - Do not add deps/config files “just because”.
+4) **Ask when unclear**: if acceptance criteria or reproduction steps are missing, comment on the issue and apply label `needs:clarification`.
+5) **Prefer small PRs**: keep changes focused to the issue.
+6) **Safe-by-default**: do not delete data; avoid breaking API changes unless explicitly requested.
+7) **CI/workflows allowed**: you may add/modify GitHub Actions and tooling (ruff, pytest, eslint, etc.) when it helps verify the change.
 
 ## Local dev quickstart (assumptions; adjust if repo differs)
 ### Backend
