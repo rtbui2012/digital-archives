@@ -30,6 +30,8 @@ export async function GET(_req: Request, ctx: { params: Promise<{ path?: string[
     const root = docsRoot();
     const filePath = safeJoin(root, decodedRel);
 
+    console.log(`[API Documents] Serving file: ${filePath} (Root: ${root}, Rel: ${decodedRel})`);
+
     const data = await fs.readFile(filePath);
 
     // Very small mapping; browser will handle PDFs natively.

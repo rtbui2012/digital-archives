@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react';
 
 type Hit = { score: number; id: string; payload: Record<string, any> };
 
-function resolveDocumentUrl(apiBase: string, payload: Record<string, any>): string | null {
+function resolveDocumentUrl(payload: Record<string, any>): string | null {
   // Prefer explicit web URL if backend ever provides one.
   const directUrl = payload?.url || payload?.href;
   if (typeof directUrl === 'string' && directUrl.trim()) return directUrl;
@@ -17,14 +17,14 @@ function resolveDocumentUrl(apiBase: string, payload: Record<string, any>): stri
   if (/^https?:\/\//i.test(p)) return p;
 
   // Browsers often block file:// navigations from http(s) pages.
-  // Serve local documents via the Next.js app instead.
+  // Serve local documents via the Next.js app instead using rewrites.
   //
-  // - If payload contains an absolute Windows path (C:\...), we strip the drive/root
-  //   and treat it as a relative path under DOCS_ROOT.
-  // - Otherwise we treat it as already-relative.
-  const rel = p.replace(/^[a-zA-Z]:\\/, '').replace(/^\/+/, '');
+  // We strip leading slashes (if any) but keep the drive letter if present.
+  const rel = p.replace(/^[\\/]+/, '');
   const normalized = rel.replace(/\\/g, '/');
-  return `${apiBase.replace(/\/+$/, '')}/documents/${normalized.split('/').map(encodeURIComponent).join('/')}`;
+
+  // Return a relative path so it hits the Next.js rewrite rule in next.config.mjs
+  return `/documents/${normalized.split('/').map(encodeURIComponent).join('/')}`;
 }
 
 export default function Page() {
@@ -73,7 +73,7 @@ export default function Page() {
               <input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="e.g. property tax 2022" 
+                placeholder="e.g. property tax 2022"
                 style={{
                   padding: '12px 12px',
                   borderRadius: 10,
@@ -125,7 +125,7 @@ export default function Page() {
                   </div>
                   <div style={{ marginTop: 6, opacity: 0.85, fontSize: 13 }}>
                     {(() => {
-                      const href = resolveDocumentUrl(apiBase, h.payload || {});
+                      const href = resolveDocumentUrl(h.payload || {});
                       const label = (h.payload?.path || h.payload?.source) as string | undefined;
                       if (!href || !label) return null;
                       return (

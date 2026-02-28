@@ -11,7 +11,6 @@ const nextConfig = {
   //
   // Then links like /documents/<relative-path> will serve files from that folder.
   async rewrites() {
-    if (!process.env.DOCS_ROOT) return [];
     // Route to our custom API handler.
     return [{ source: '/documents/:path*', destination: '/api/documents/:path*' }];
   }
