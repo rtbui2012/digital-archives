@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react';
 
 type Hit = { score: number; id: string; payload: Record<string, any> };
 
-function resolveDocumentUrl(_apiBase: string, payload: Record<string, any>): string | null {
+function resolveDocumentUrl(apiBase: string, payload: Record<string, any>): string | null {
   // Prefer explicit web URL if backend ever provides one.
   const directUrl = payload?.url || payload?.href;
   if (typeof directUrl === 'string' && directUrl.trim()) return directUrl;
@@ -16,21 +16,15 @@ function resolveDocumentUrl(_apiBase: string, payload: Record<string, any>): str
   // Already an absolute URL? Use it.
   if (/^https?:\/\//i.test(p)) return p;
 
-  // If it looks like an absolute Windows path, open via file:///
-  // Example: C:\Users\me\Documents\file.pdf
-  if (/^[a-zA-Z]:\\/.test(p)) {
-    const forward = p.replace(/\\/g, '/');
-    return `file:///${encodeURI(forward)}`;
-  }
-
-  // If it looks like a *nix absolute path, open via file://
-  // Example: /home/me/docs/file.pdf
-  if (p.startsWith('/')) {
-    return `file://${encodeURI(p)}`;
-  }
-
-  // Relative paths: also treat as file paths (relative to current machine).
-  return `file:///${encodeURI(p.replace(/\\/g, '/'))}`;
+  // Browsers often block file:// navigations from http(s) pages.
+  // Serve local documents via the Next.js app instead.
+  //
+  // - If payload contains an absolute Windows path (C:\...), we strip the drive/root
+  //   and treat it as a relative path under DOCS_ROOT.
+  // - Otherwise we treat it as already-relative.
+  const rel = p.replace(/^[a-zA-Z]:\\/, '').replace(/^\/+/, '');
+  const normalized = rel.replace(/\\/g, '/');
+  return `${apiBase.replace(/\/+$/, '')}/documents/${normalized.split('/').map(encodeURIComponent).join('/')}`;
 }
 
 export default function Page() {
