@@ -25,7 +25,21 @@ export async function GET(_req: Request, ctx: { params: Promise<{ path?: string[
     const rel = (parts || []).join('/');
 
     // Decode URL encoding. Next already decodes segments, but keep this safe.
-    const decodedRel = decodeURIComponent(rel);
+    let decodedRel = decodeURIComponent(rel);
+
+    // If the indexed path is a full Windows absolute path (e.g. C:/Users/.../Documents/foo.pdf)
+    // strip the host-side prefix so we're left with just the relative part (e.g. foo.pdf).
+    const hostPrefix = process.env.DOCS_HOST_PREFIX;
+    if (hostPrefix) {
+      // Normalize both to forward slashes for comparison.
+      const normalizedPrefix = hostPrefix.replace(/\\/g, '/').replace(/\/$/, '');
+      const normalizedRel = decodedRel.replace(/\\/g, '/');
+      if (normalizedRel.startsWith(normalizedPrefix + '/')) {
+        decodedRel = normalizedRel.slice(normalizedPrefix.length + 1);
+      } else if (normalizedRel === normalizedPrefix) {
+        decodedRel = '';
+      }
+    }
 
     const root = docsRoot();
     const filePath = safeJoin(root, decodedRel);
