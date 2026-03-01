@@ -1,0 +1,18 @@
+services:
+  backend:
+    build:
+      context: ./backend
+    ports:
+      - "11021:11021"
+
+  frontend:
+    build:
+      context: ./frontend
+    depends_on:
+      - backend
+    ports:
+      - "12021:12021"
+    environment:
+      NEXT_PUBLIC_API_BASE: "http://backend:11021/api"
+      VITE_API_URL: "http://backend:11021"
+      REACT_APP_API_URL: "http://backend:11021"
