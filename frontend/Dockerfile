@@ -6,10 +6,12 @@ COPY package.json package-lock.json* ./
 RUN if [ -f package-lock.json ]; then npm ci; else npm install; fi
 
 FROM node:20-alpine AS build
+ARG NEXT_PUBLIC_API_BASE
+ENV NEXT_PUBLIC_API_BASE=$NEXT_PUBLIC_API_BASE
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . ./
-RUN npm run build
+RUN npm run build && mkdir -p ./public
 
 FROM node:20-alpine AS runtime
 ENV NODE_ENV=production

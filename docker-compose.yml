@@ -4,15 +4,20 @@ services:
       context: ./backend
     ports:
       - "11021:11021"
+    environment:
+      QDRANT_URL: "http://host.docker.internal:6333"
 
   frontend:
     build:
       context: ./frontend
+      args:
+        NEXT_PUBLIC_API_BASE: "http://localhost:11021/api"
     depends_on:
       - backend
     ports:
       - "12021:12021"
     environment:
-      NEXT_PUBLIC_API_BASE: "http://backend:11021/api"
-      VITE_API_URL: "http://backend:11021"
-      REACT_APP_API_URL: "http://backend:11021"
+      DOCS_ROOT: /docs
+      DOCS_HOST_PREFIX: "C:/Users/rt_bu/Documents"
+    volumes:
+      - C:\Users\rt_bu\Documents:/docs:ro
