@@ -7,6 +7,18 @@ services:
     environment:
       QDRANT_URL: "http://host.docker.internal:6333"
 
+  indexer:
+    build:
+      context: ./backend
+    environment:
+      QDRANT_URL: "http://host.docker.internal:6333"
+      DOCS_ROOT: /docs
+      INDEX_SYNC_INTERVAL: 3600
+    volumes:
+      - C:\Users\rt_bu\Documents:/docs:ro
+      - indexer_data:/app/data
+    command: [ "python", "indexer.py" ]
+
   frontend:
     build:
       context: ./frontend
@@ -21,3 +33,6 @@ services:
       DOCS_HOST_PREFIX: "C:/Users/rt_bu/Documents"
     volumes:
       - C:\Users\rt_bu\Documents:/docs:ro
+
+volumes:
+  indexer_data:

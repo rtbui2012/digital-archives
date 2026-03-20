@@ -6,6 +6,7 @@ import uuid
 from ..chunking import chunk_text
 from ..embedder import embed
 from ..qdrant import get_client, get_collection
+from ..parser import extract_pages_from_pdf
 
 router = APIRouter(tags=["index"]) 
 
@@ -21,11 +22,7 @@ async def index_pdf(file: UploadFile = File(...)):
         raise HTTPException(status_code=400, detail=f"Expected PDF, got {file.content_type}")
 
     data = await file.read()
-    reader = PdfReader(io_bytes := __import__("io").BytesIO(data))
-
-    pages_text: list[str] = []
-    for p in reader.pages:
-        pages_text.append((p.extract_text() or "").strip())
+    pages_text = extract_pages_from_pdf(data)
 
     full_text = "\n\n".join(pages_text).strip()
     if not full_text:
